@@ -1,7 +1,7 @@
 # Development Environment Setup Script
 
 ## Overview
-This script automates the installation and setup of essential development tools for backend developers, particularly those working with PHP and Laravel. It configures Git, Docker, PHP 8.3, Composer, Node.js, and various applications via Snap, streamlining the environment setup process.
+This script automates the installation and setup of essential development tools for backend developers, particularly those working with PHP and Laravel on **Ubuntu**. It configures Git, Docker, PHP 8.3, Composer, Node.js, NPM, Net-Tools and various applications via Snap, streamlining the environment setup process.
 
 ## Features
 - Installs Git and configures user credentials
@@ -11,6 +11,7 @@ This script automates the installation and setup of essential development tools 
 - Installs PostgreSQL client
 - Installs Composer for PHP dependency management
 - Installs Node.js and npm
+- Installs Net-Tools
 - Installs Snap and popular applications like VLC, Discord, Beekeeper Studio, Postman, PhpStorm, and Visual Studio Code
 
 ## Requirements
@@ -22,14 +23,17 @@ This script automates the installation and setup of essential development tools 
    ```bash
    git clone https://github.com/DevKandil/php-dev-environment.git
    cd php-dev-environment
-
+   ```
+   
 2. Make the script executable:
    ```bash
    chmod +x setup_dev_tools.sh
+   ```
 
 3. Run the script:
    ```bash
    ./setup_dev_tools.sh
+   ```
 
 4. Follow the prompts to configure Git and other tools as needed.
 

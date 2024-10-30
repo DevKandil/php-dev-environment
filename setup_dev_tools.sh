@@ -1,8 +1,27 @@
 #!/bin/bash
 
+# Ensure figlet is installed silently
+if ! command -v figlet &> /dev/null; then
+    sudo apt-get install -y figlet > /dev/null 2>&1
+fi
+
 # Set green text color
 GREEN='\e[32m'
 NC='\e[0m' # No Color
+
+# Display centered ASCII art banner for "DevKandil"
+clear
+echo -e "${GREEN}$(figlet "DevKandil")${NC}"
+
+# Add author and script details
+echo -e "${GREEN}------------------------------------------------------------${NC}"
+echo -e "${GREEN}Installation Script                                         ${NC}"
+echo -e "${GREEN}Author: Abdelrazek Kandil                                   ${NC}"
+echo -e "${GREEN}Description: This script sets up essential development tools${NC}"
+echo -e "${GREEN}and configures your environment.                            ${NC}"
+echo -e "${GREEN}Last Modified: $(date +'%Y-%m-%d')                          ${NC}"
+echo -e "${GREEN}------------------------------------------------------------${NC}"
+echo ""
 
 # Update system packages
 echo -e "${GREEN}Updating system packages...${NC}"
@@ -40,20 +59,25 @@ else
     cat "$HOME/.ssh/id_ed25519.pub"
 fi
 
-# Prompt for GitHub username and personal access token
-echo -e "${GREEN}Logging into GitHub...${NC}"
-read -p "Enter your GitHub username: " github_username
-read -s -p "Enter your GitHub personal access token: " github_token
-echo
+# Check if the user wants to login to GitHub
+read -p "Do you want to login to your GitHub account? (y/n): " login_to_github
+if [ "$login_to_github" = "y" ]; then
+    
+    # Prompt for GitHub username and personal access token
+    echo -e "${GREEN}Logging into GitHub...${NC}"
+    read -p "Enter your GitHub username: " github_username
+    read -s -p "Enter your GitHub personal access token: " github_token
+    echo
 
-# Configure Git with GitHub credentials
-git config --global user.name "$github_username"
-git config --global user.email "$user_email" # Use the email used for SSH key generation
-echo -e "${GREEN}Git configured with username: $github_username and email: $user_email${NC}"
+    # Configure Git with GitHub credentials
+    git config --global user.name "$github_username"
+    git config --global user.email "$user_email" # Use the email used for SSH key generation
+    echo -e "${GREEN}Git configured with username: $github_username and email: $user_email${NC}"
 
-# Store credentials using the Git credential helper
-git config --global credential.helper store
-echo -e "${GREEN}Credentials caching enabled for Git.${NC}"
+    # Store credentials using the Git credential helper
+    git config --global credential.helper store
+    echo -e "${GREEN}Credentials caching enabled for Git.${NC}"
+fi
 
 # Install Docker following official documentation
 echo -e "${GREEN}Installing Docker...${NC}"
@@ -75,18 +99,20 @@ if ! command -v docker &> /dev/null; then
     # Update package list and install Docker packages
     sudo apt-get update -y
     sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
+    # Create docker group and add user if not already in group
+    if ! groups $USER | grep &>/dev/null '\bdocker\b'; then
+        sudo groupadd docker 2>/dev/null || true
+        sudo usermod -aG docker $USER
+        echo -e "${GREEN}Docker installed. Please log out and log back in for group permissions to take effect.${NC}"
+        echo -e "${GREEN}You can do this by closing this terminal session and opening a new one, or by running 'exit' and then logging in again.${NC}"
+    fi
+
 else
     echo -e "${GREEN}Docker is already installed.${NC}"
 fi
 
 echo -e "${GREEN}Docker version: $(docker --version)${NC}"
-
-# Create docker group and add user if not already in group
-if ! groups $USER | grep &>/dev/null '\bdocker\b'; then
-    sudo groupadd docker 2>/dev/null || true
-    sudo usermod -aG docker $USER
-    newgrp docker
-fi
 
 # Install PHP 8.3 and extensions
 echo -e "${GREEN}Installing PHP 8.3...${NC}"
@@ -140,6 +166,24 @@ fi
 echo -e "${GREEN}Node.js version: $(node -v)${NC}"
 echo -e "${GREEN}NPM version: $(npm -v)${NC}"
 
+# Install net-tools for network management
+echo -e "${GREEN}Installing net-tools...${NC}"
+if ! command -v ifconfig &> /dev/null; then
+    sudo apt-get install -y net-tools
+else
+    echo -e "${GREEN}Net-tools is already installed.${NC}"
+fi
+
+# Get the local IP address
+LOCAL_IP=$(ifconfig | grep -oP 'inet \K192\.168\.\d+\.\d+')
+
+# Display the IP address and set it as default (informing the user)
+if [ -n "$LOCAL_IP" ]; then
+    echo -e "${GREEN}Your local IP address is: $LOCAL_IP${NC}"
+else
+    echo -e "${GREEN}Could not retrieve a local IP address in the 192.168.x.x range.${NC}"
+fi
+
 # Install Snap and applications
 echo -e "${GREEN}Installing Snap...${NC}"
 if ! command -v snap &> /dev/null; then
@@ -174,3 +218,5 @@ for app in "${classic_apps[@]}"; do
 done
 
 echo -e "${GREEN}All installations are complete!${NC}"
+
+exit 0
